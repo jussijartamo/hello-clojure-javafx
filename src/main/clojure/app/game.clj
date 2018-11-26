@@ -28,7 +28,6 @@
            javafx.stage.Stage))
 
 (defn root [chip-controller {:keys [deck hand opponent-hand poker-state]} state]
-  (prn "state " poker-state)
   (let [main-action                                         (clojure.string/capitalize (name poker-state))
         {:keys [chip-group all-in-pot? reset-chips]}        chip-controller
         {:keys [new-chip-pot]}                              chip-controller
@@ -62,16 +61,16 @@
                                                                 (prn "resolving round!")
                                                                 (initialize-round state)
                                                                 (reset-chips))
-        chip-pile-click-action (fn []
-                                 (match [round-on? poker-state]
-                                        [true _]
-                                        (raise state)
+        chip-pile-click-action                              (fn []
+                                                              (match [round-on? poker-state]
+                                                                     [true _]
+                                                                     (raise state)
 
-                                        [_ :victory]
-                                        (take-away-node @chip-group resolve-round)
+                                                                     [_ :victory]
+                                                                     (take-away-node @chip-group resolve-round)
 
-                                        [false _]
-                                        (give-away-node @chip-group resolve-round)))
+                                                                     [false _]
+                                                                     (give-away-node @chip-group resolve-round)))
         toolbar                                             (vertical-layout
                                                              [money-display
                                                               [(doto
@@ -82,9 +81,7 @@
                                                                   (fx [_]
                                                                       (when round-on?
                                                                         (do
-                                                                          (-> state
-                                                                              (override {:poker-state :fold})
-                                                                              (initialize-round))
+                                                                          (fold-cards state)
                                                                           (reset-chips))))))
                                                                (doto
                                                                 call-button

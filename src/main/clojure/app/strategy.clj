@@ -7,8 +7,8 @@
 (defn fearless-strategy [hand]
   (if-let [rare? (rare-hand? hand)]
     (do
-      (prn "fearless opponent is having rare hand! Raise if possible! " (keys rare?))
+      (prn "Fearless opponent is having rare hand! Raise if possible!" (keys rare?))
       :raise)
     (do
-      (prn "fearless opponent is having weak hand! call if possible!")
+      (prn "Fearless opponent is having weak hand! Call if possible!")
       :call)))

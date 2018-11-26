@@ -56,7 +56,6 @@
 
 (defn- make-opponent-round [{:keys [poker-state opponent-pot pot opponent-money min-raise opponent-hand]}
                             state]
-  (prn "calcinating and state is " poker-state)
   (let [call-if-raise (fn [s] (if (= :raise s)
                                 :call
                                 s))
@@ -71,7 +70,7 @@
                                                 inverse-state
                                                 (calculate-min-to-check inverse-state))
                                         [opponent-pot opponent-money])]
-    (prn "player decided to " strategy)
+    (prn "Opponent decided to " strategy)
     (override state
               {:opponent-pot   opponent-pot
                :opponent-money opponent-money
@@ -194,6 +193,9 @@
                :opponent-money     opponent-money
                :poker-state        :draw
                :opponent-pot       opponent-pot})))
+
+(defn fold-cards [state]
+  (-> state (override {:poker-state :fold}) (initialize-round)))
 
 (defn initialize [state]
   (-> state

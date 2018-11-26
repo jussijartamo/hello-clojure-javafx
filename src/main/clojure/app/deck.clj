@@ -83,11 +83,11 @@
        (= 0 (count (keys better-hand)))
        (= 0 (count (keys worse-hand))))
     (do
-      (prn "both out of cards so tie")
+      (prn "Tie!")
       :tie)
     (if (= 0 (count (keys better-hand)))
       (do
-        (prn "better out of cards so lost")
+        (prn "Opponent won with something:" worse-hand)
         :no)
       (let [better-rankings          (sort (map #(.indexOf hand-rankings %) (keys better-hand)))
             worse-rankings           (sort (map #(.indexOf hand-rankings %) (keys worse-hand)))
@@ -96,30 +96,26 @@
             highest-rank             (fn [hand rank-index]
                                        (let [cards (get hand (rank-key rank-index))
                                              ranks (flatten (sort-ranks (map second cards)))]
-                                         (prn "ranks " ranks)
                                          (last ranks)))
-            [best-better best-worse] [(last better-rankings) (last worse-rankings)]
-            fgfda                    (prn "better-bests " [best-better best-worse])]
+            [best-better best-worse] [(last better-rankings) (last worse-rankings)]]
         (cond
           (> best-better best-worse) (do
-                                       (prn "better won with bigger ranking")
+                                       (prn "Player won with bigger ranking")
                                        :yes)
           (= best-better best-worse) (do
-                                       (prn "rankings are same")
                                        (let [better-high (.indexOf ranks (highest-rank better-hand best-better))
                                              worse-high  (.indexOf ranks (highest-rank worse-hand best-worse))]
                                          (cond
                                            (> better-high worse-high) (do
-                                                                        (prn "better won with bigger high")
+                                                                        (prn "Player won with bigger high")
                                                                         :yes)
                                            (= better-high worse-high) (do
-                                                                        (prn "trying again prolly tie!")
                                                                         (better-hand? (dissoc better-hand (rank-key best-better))
                                                                                       (dissoc worse-hand (rank-key best-worse))))
                                            :else                      (do
-                                                                        (prn "worse won with bigger high")
+                                                                        (prn "Opponent won with bigger high")
                                                                         :no))))
           :else                      (do
-                                       (prn "worse won with better rank")
+                                       (prn "Opponent won with better rank")
                                        :no))))))
 

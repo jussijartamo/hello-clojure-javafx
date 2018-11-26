@@ -56,7 +56,7 @@
      (= 0 (compare elm v)))
    coll))
 
-(defn toggle_v! [state path value]
+(defn toggle_selected-card! [state path value]
   (upsert state :selected-cards
           (fn [v]
             (if (in? v value)
@@ -108,9 +108,7 @@
           (css-class "card-selectable")
           (.setOnMouseClicked
             (fx [_]
-                (prn "click")
-                (toggle_v! state [:selected-cards] card-from-deck))))))
-
+                (toggle_selected-card! state [:selected-cards] card-from-deck))))))
 
 (defn poker-chip [value]
   (let [gr           (Group.)

@@ -1,4 +1,6 @@
 
+- Better cards animations: Discard and selected
+
 - Better feedback on opponent decisions
    - show changes on balance for both player and opponent
    - briefly halt game on opponent action (animation or confirm dialog)
