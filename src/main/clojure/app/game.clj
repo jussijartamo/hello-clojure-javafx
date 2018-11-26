@@ -37,8 +37,8 @@
                                                               (= :call poker-state)
                                                               (= :draw poker-state)))
         total-pot                                           (calculate-total-pot state)
-        {:keys [pot min-raise]}                @state
-        min-to-check (calculate-min-to-check state)
+        {:keys [pot min-raise]}                             @state
+        min-to-check                                        (calculate-min-to-check state)
         score                                               (calculate-hand hand)
         opponent-selected                                   (pick-good-cards opponent-hand)
         opponent-cards                                      (doto
@@ -58,55 +58,61 @@
                                                                 :loss    (.setText pot-text (str "You lost $" total-pot))
                                                                 (.setText pot-text (str "Total Pot $" total-pot))))
         call-button                                         (action-bar-button main-action)
-        toolbar                                             (vertical-layout
-                                                             [money-display
-                                                              [(when round-on?
-                                                                 (doto
-                                                                  (action-bar-button "🗙 Fold")
-                                                                  (.setOnAction
-                                                                    (fx [_]
-                                                                        (-> state
-                                                                        (override {:poker-state :fold})
-                                                                        (initialize-round))
-                                                                        (reset-chips)))))
-                                                               (when round-on?
-                                                                 (doto
-                                                                  call-button
-                                                                  (.setOnMouseEntered
-                                                                    (fx [_]
-                                                                        (when (= :call poker-state)
-                                                                          (if (= "0" min-to-check)
-                                                                            (.setText call-button (str "Check"))
-                                                                            (.setText call-button (str "+$" min-to-check))))))
-                                                                  (.setOnMouseExited
-                                                                    (fx [_]
-                                                                        (.setText call-button main-action)))
-                                                                  (.setOnAction
-                                                                    (fx [_]
-                                                                        (case poker-state
-                                                                          :draw (draw state)
-                                                                          :call (call state))))))]])
-
-        vbox                                                (doto (VBox.)
-                                                                  (.setSpacing 10)
-                                                                  (children [toolbar cards]))
         resolve-round                                       (fx [_]
                                                                 (prn "resolving round!")
                                                                 (initialize-round state)
-                                                                (reset-chips))]
+                                                                (reset-chips))
+        chip-pile-click-action (fn []
+                                 (match [round-on? poker-state]
+                                        [true _]
+                                        (raise state)
+
+                                        [_ :victory]
+                                        (take-away-node @chip-group resolve-round)
+
+                                        [false _]
+                                        (give-away-node @chip-group resolve-round)))
+        toolbar                                             (vertical-layout
+                                                             [money-display
+                                                              [(doto
+                                                                (action-bar-button "🗙 Fold")
+                                                                (cond->
+                                                                  (not round-on?) (make-node-appear 1.0 0.2))
+                                                                (.setOnAction
+                                                                  (fx [_]
+                                                                      (when round-on?
+                                                                        (do
+                                                                          (-> state
+                                                                              (override {:poker-state :fold})
+                                                                              (initialize-round))
+                                                                          (reset-chips))))))
+                                                               (doto
+                                                                call-button
+                                                                (.setOnMouseEntered
+                                                                  (fx [_]
+                                                                      (when (= :call poker-state)
+                                                                        (if (= "0" min-to-check)
+                                                                          (.setText call-button (str "Check"))
+                                                                          (.setText call-button (str "+$" min-to-check))))))
+                                                                (.setOnMouseExited
+                                                                  (fx [_]
+                                                                      (.setText call-button main-action)))
+                                                                (.setOnAction
+                                                                  (fx [_]
+                                                                      (if round-on?
+                                                                        (case poker-state
+                                                                          :draw (draw state)
+                                                                          :call (call state))
+                                                                        (chip-pile-click-action)))))]])
+
+        vbox                                                (doto (VBox.)
+                                                                  (.setSpacing 10)
+                                                                  (children [toolbar cards]))]
     (doto @chip-group
           (.setPickOnBounds true)
           (.setOnMouseClicked
             (fx [_]
-                (match [round-on? poker-state]
-                       [true _]
-                       (raise state)
-
-                       [_ :victory]
-                       (take-away-node @chip-group resolve-round)
-
-                       [false _]
-                       (give-away-node @chip-group resolve-round))))
+                (chip-pile-click-action)))
           (.setOnMouseEntered
             (fx [_]
                 (when round-on?
@@ -126,7 +132,7 @@
   (let [chip-group   (atom nil)
         chips-in-pot (atom nil)
         reset-fn     (fn []
-                       (let [total-pot (calculate-total-pot state)
+                       (let [total-pot     (calculate-total-pot state)
                              hot-spot-size 300]
                          (reset! chips-in-pot total-pot)
                          (reset! chip-group
@@ -136,8 +142,7 @@
                                        (.setMinWidth hot-spot-size)
                                        (.setMinHeight hot-spot-size)
                                        (.setMaxSize (Region/USE_PREF_SIZE) (Region/USE_PREF_SIZE))
-                                       (children [(pile-of-chips (split->chips total-pot))])
-                                       ))))]
+                                       (children [(pile-of-chips (split->chips total-pot))])))))]
     (reset-fn)
     {:chip-group   chip-group
      :all-in-pot?  (fn []
@@ -162,12 +167,12 @@
                  (Platform/runLater
                   (fn []
                     (let [{:keys [new-chip-pot all-in-pot? chip-group]} chip-controller]
-                    (if-not (all-in-pot?)
-                      (doto @chip-group
-                            (children
-                             (pile-of-chips
-                              (split->chips
-                               (new-chip-pot)))))))
+                      (if-not (all-in-pot?)
+                        (doto @chip-group
+                              (children
+                               (pile-of-chips
+                                (split->chips
+                                 (new-chip-pot)))))))
                     (.setRoot scene (new-root))))))
     scene))
 

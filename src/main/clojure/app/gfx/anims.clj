@@ -15,6 +15,7 @@
            javafx.scene.effect.BlurType
            javafx.scene.effect.BoxBlur
            javafx.scene.effect.GaussianBlur
+           javafx.animation.Interpolator
            javafx.scene.layout.StackPane
            javafx.scene.layout.HBox
            javafx.scene.Group
@@ -32,11 +33,12 @@
            javafx.util.Duration))
 
 
-(defn make-node-appear [node]
-  (let [ft (doto (FadeTransition. (Duration/millis 500) node)
-                 (.setFromValue 0.0)
-                 (.setToValue 1.0)
+(defn make-node-appear [node from to]
+  (let [ft (doto (FadeTransition. (Duration/millis 250) node)
+                 (.setFromValue from)
+                 (.setToValue to)
                  (.setCycleCount 1)
+                 (.setInterpolator (Interpolator/EASE_OUT))
                  (.setAutoReverse false))]
     (.play ft)
     node))
