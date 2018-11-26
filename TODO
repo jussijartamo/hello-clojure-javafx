@@ -2,9 +2,9 @@
 - Better cards animations: Discard and selected
 
 - Better feedback on opponent decisions
-   - show changes on balance for both player and opponent
-   - briefly halt game on opponent action (animation or confirm dialog)
-   - animation with click to end could be optimal
+   - Show changes on balance for both player and opponent
+   - Maybe briefly halt game on opponent action (animation or confirm dialog)
+   - Animations with click to end if possible
 
 - Implement all-in
 
@@ -29,17 +29,3 @@ Some skills have probability to activate. Some have limited uses per match.
    - No-draw
    - Opponent-forces-draw
    - Asymmetric-cost-multipliers (cheaper for opponent to raise)
-
-Return sanity on poker round resolving
-Currently:
-FOLD = (-> state (override {:poker-state :fold}) (initialize-round))
-RAISE = (raise state)
-"MAIN ACTION" = (case poker-state :draw (draw state) :call (call state))
-"AKNOWLEDGE END OF ROUND" = (initialize-round state)
-
-Simplified:
-During poker states: draw, call
-[:draw :raise :fold ...] (available-actions state)
-During poker states: victory, loss, tie, opponent-fold
-[:ok] (available-actions state)
-When player takes action just call: (take-action action) and let the magic happen
