@@ -1,0 +1,45 @@
+- When fold, call options disappear the middle block moves
+  -- FIX THIS
+
+- Better feedback on opponent decisions
+   - show changes on balance for both player and opponent
+   - briefly halt game on opponent action (animation or confirm dialog)
+   - animation with click to end could be optimal
+
+- Implement all-in
+
+- Wavy win animation banner (and lost animation banner)
+
+- Player skills
+Some skills have probability to activate. Some have limited uses per match.
+   Probability:
+   - Check-random-card-or-ranking
+   - Check-worst-ranking-other-than-high-card
+   - Check-best-ranking
+   Limited uses:
+   - Cancel-round-and-return-the-pot (amnesia)
+   - Additional-draw-on-self
+   - Mind-read-and-lock-that-as-next-action-for-opponent
+   - Manipulation-choose-next-action-for-opponent-other-than-fold
+   - Manipulation-allow-fold-as-option
+   - Forced-draw-on-opponent
+   - Force-strategy-on-opponent
+   - Force-raise-streak-on-opponent
+   Mutators:
+   - No-draw
+   - Opponent-forces-draw
+   - Asymmetric-cost-multipliers (cheaper for opponent to raise)
+
+Return sanity on poker round resolving
+Currently:
+FOLD = (-> state (override {:poker-state :fold}) (initialize-round))
+RAISE = (raise state)
+"MAIN ACTION" = (case poker-state :draw (draw state) :call (call state))
+"AKNOWLEDGE END OF ROUND" = (initialize-round state)
+
+Simplified:
+During poker states: draw, call
+[:draw :raise :fold ...] (available-actions state)
+During poker states: victory, loss, tie, opponent-fold
+[:ok] (available-actions state)
+When player takes action just call: (take-action action) and let the magic happen

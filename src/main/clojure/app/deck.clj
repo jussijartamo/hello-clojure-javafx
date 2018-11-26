@@ -4,7 +4,10 @@
 
 (def suits [:spade :heart :diamond :club])
 (def ranks [:2 :3 :4 :5 :6 :7 :8 :9 :10 :jack :queen :king :ace])
+(def hand-rankings [:high-card :pair :two-pair :three-of-kind :straight :flush :full-house :four-of-kind :straight-flush :royal-flush])
 
+(defn sort-ranks [ranks]
+  (sort-by #(.indexOf ranks %) ranks))
 
 (defn sort-deck [deck]
   (sort-by
@@ -21,6 +24,7 @@
 (defn calculate-hand [hand]
   (let [map-kv                  (fn [f coll] (reduce-kv (fn [m k v] (assoc m k (f v))) (empty coll) coll))
         ssecond                 #(second (second %))
+        flat-once               (fn [v] (mapcat identity v))
         upgrade->basic-pairs    (fn [cards]
                                   (case (count cards)
                                     1 [:high-card cards]
@@ -32,37 +36,90 @@
                                                   (map-kv upgrade->basic-pairs
                                                           (group-by second hand))))
         upgrade->high-cards     (fn [k v]
-                                  (prn "-- upping 5 high cards --")
-                                  (let [rank-of-cards  (map #(second (first %)) v)
+                                  (let [rank-of-cards  (map second v)
                                         ace?           (seq (filter #(= :ace %) rank-of-cards))
                                         rank-values    (sort (map #(.indexOf ranks %) rank-of-cards))
                                         incrementing?  (apply = (map - rank-values (range)))
-                                        suits-of-cards (frequencies (map ffirst v))
-                                        single-suit?   (= 5 (count (keys suits-of-cards)))]
+                                        suits-of-cards (frequencies (map first v))
+                                        single-suit?   (some #(= 5 %) (vals suits-of-cards))]
                                     (case [incrementing? single-suit?]
-                                      [true false] :straight
-                                      [false true] :flush
-                                      [true true]  (if ace?
-                                                     :royal-flush
-                                                     :straight-flush)
-                                      k)))
+                                      [true false] [:straight v]
+                                      [false true] [:flush v]
+                                      [true true]  [(if ace?
+                                                      :royal-flush
+                                                      :straight-flush)
+                                                    v]
+                                      [k v])))
         upgrade->advanced-pairs ((fn [coll]
                                    (reduce-kv
                                     (fn [m k v]
-                                      (let [new-k
+                                      (let [[new-k new-v]
                                             (case [k (count v)]
-                                              [:pair 2]      :two-pairs
-                                              [:high-card 5] (upgrade->high-cards k v)
-                                              k)]
-                                        (assoc m new-k v)))
+                                              [:pair 2]      [:two-pair (flat-once v)]
+                                              [:high-card 5] (upgrade->high-cards k (flat-once v))
+                                              [k (flat-once v)])]
+                                        (assoc m new-k new-v)))
                                     (empty coll) coll))
                                   pair-and-cards)
         upgrade->full-house     (fn [{:keys [pair three-of-kind] :as all}]
                                   (if (every? some? [pair three-of-kind])
                                     {:full-house (mapcat identity (vals all))}
                                     all))]
+    (upgrade->full-house upgrade->advanced-pairs)))
 
+(defn rare-hand? [hand]
+  (let [ranks (-> (calculate-hand hand)
+                  (dissoc :high-card)
+                  (dissoc :pair))]
+    (not-empty ranks)))
 
-    (pprint (upgrade->full-house upgrade->advanced-pairs))))
+(defn pick-good-cards [hand]
+  (let [score      (calculate-hand hand)
+        good-cards (mapcat identity (vals (dissoc score :high-card)))]
+    (seq good-cards)))
 
+(defn better-hand? [better-hand worse-hand]
+  (if (and
+       (= 0 (count (keys better-hand)))
+       (= 0 (count (keys worse-hand))))
+    (do
+      (prn "both out of cards so tie")
+      :tie)
+    (if (= 0 (count (keys better-hand)))
+      (do
+        (prn "better out of cards so lost")
+        :no)
+      (let [better-rankings          (sort (map #(.indexOf hand-rankings %) (keys better-hand)))
+            worse-rankings           (sort (map #(.indexOf hand-rankings %) (keys worse-hand)))
+            rank-key                 (fn [rank-index]
+                                       (get hand-rankings rank-index))
+            highest-rank             (fn [hand rank-index]
+                                       (let [cards (get hand (rank-key rank-index))
+                                             ranks (flatten (sort-ranks (map second cards)))]
+                                         (prn "ranks " ranks)
+                                         (last ranks)))
+            [best-better best-worse] [(last better-rankings) (last worse-rankings)]
+            fgfda                    (prn "better-bests " [best-better best-worse])]
+        (cond
+          (> best-better best-worse) (do
+                                       (prn "better won with bigger ranking")
+                                       :yes)
+          (= best-better best-worse) (do
+                                       (prn "rankings are same")
+                                       (let [better-high (.indexOf ranks (highest-rank better-hand best-better))
+                                             worse-high  (.indexOf ranks (highest-rank worse-hand best-worse))]
+                                         (cond
+                                           (> better-high worse-high) (do
+                                                                        (prn "better won with bigger high")
+                                                                        :yes)
+                                           (= better-high worse-high) (do
+                                                                        (prn "trying again prolly tie!")
+                                                                        (better-hand? (dissoc better-hand (rank-key best-better))
+                                                                                      (dissoc worse-hand (rank-key best-worse))))
+                                           :else                      (do
+                                                                        (prn "worse won with bigger high")
+                                                                        :no))))
+          :else                      (do
+                                       (prn "worse won with better rank")
+                                       :no))))))
 

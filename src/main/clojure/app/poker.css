@@ -1,0 +1,83 @@
+.root{
+    -fx-font-size: 16pt;
+
+    -fx-base: rgb(132, 145, 47);
+    -fx-background: rgb(45, 118, 70);
+}
+
+.poker-chip-text {
+    -fx-font: 20 arial;
+    -fx-font-weight: bold;
+}
+.poker-chip {
+     -fx-effect: dropshadow(three-pass-box, black, 10, 0, 0, 0);
+}
+.poker-chip-500 {
+    -fx-fill: red;
+}
+.poker-chip-100 {
+    -fx-fill: green;
+}
+.poker-chip-50 {
+    -fx-fill: blue;
+}
+.poker-chip-25 {
+    -fx-fill: black;
+}
+.action-button {
+    -fx-background-color: #f7f7f7;
+    -fx-font-weight: bold;
+    -fx-font: 20 arial;
+    -fx-cursor: hand;
+}
+
+.action-button:hover {
+    -fx-highlight-fill: -fx-accent;
+    -fx-highlight-text-fill: white;
+     -fx-effect: dropshadow(three-pass-box, purple, 10, 0, 0, 0);
+}
+
+.pot-stash {
+    -fx-cursor: hand;
+}
+
+.pot-stash:hover {
+     -fx-effect: dropshadow(three-pass-box, purple, 10, 0, 0, 0);
+}
+
+.display-banner-rectangle {
+    -fx-fill: rgba(0, 0, 0, .7);
+    -fx-arc-height: 25;
+    -fx-arc-width: 25;
+}
+
+.display-banner-text {
+    -fx-fill: rgba(255, 255, 255);
+    -fx-font: 20 arial;
+    -fx-font-weight: bold;
+}
+.cardboard {
+    -fx-arc-height: 15;
+    -fx-arc-width: 15;
+}
+.card-selectable {
+    -fx-cursor: hand;
+}
+.card-selectable:hover {
+     -fx-effect: dropshadow(three-pass-box, purple, 10, 0, 0, 0);
+}
+.cardboard-red {
+    -fx-fill: red;
+}
+.cardboard-text {
+    -fx-fill: rgba(255, 255, 255);
+    -fx-font: 26 arial;
+}
+.cardboard-symbol {
+    -fx-font: 32 arial;
+    -fx-fill: rgba(255, 255, 255);
+}
+.cardboard-selected {
+    -fx-fill: rgba(255, 255, 255);
+    -fx-font: 22 arial;
+}
